@@ -8,7 +8,6 @@ import {
   Param,
   Post,
   Put,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -19,94 +18,76 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ResponseService } from '../../../package/services/response.service';
-import { UserService } from '../services/user.service';
-import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
-import { IntValidationPipe } from '../../../package/pipes/int-validation.pipe';
 import { ResponseDto } from '../../../package/dtos/response/response.dto';
 import { ObjectIdValidationPipe } from '../../../package/pipes/object-id-validation.pipe';
 import { SetterGuard } from '../../../package/guards/setter.guard';
-import { UserDto } from '../../../package/dtos/user/user.dto';
 import { DtoValidationPipe } from '../../../package/pipes/dto-validation.pipe';
+import { CategoryService } from '../services/category.service';
+import { CategoryDto } from '../../../package/dtos/quiz/category.dto';
 
-@ApiTags('user')
+@ApiTags('category')
 @ApiBearerAuth()
-@Controller('user')
-export class UserController {
+@Controller('category')
+export class CategoryController {
   constructor(
-    private userService: UserService,
+    private categoryService: CategoryService,
     private readonly responseService: ResponseService,
   ) {}
 
-  @ApiImplicitQuery({
-    name: 'sort',
-    required: false,
-    type: String,
-  })
-  @ApiImplicitQuery({
-    name: 'order',
-    required: false,
-    type: Number,
-  })
   @HttpCode(HttpStatus.OK)
   @ApiCreatedResponse({
     status: HttpStatus.OK,
-    description: 'Paginated User List',
+    description: 'All Category List',
   })
-  @Get('pagination')
-  async pagination(
-    @Query('page', new IntValidationPipe()) page: number,
-    @Query('limit', new IntValidationPipe()) limit: number,
-    @Query('sort') sort: string,
-    @Query('order') order: number,
-  ): Promise<ResponseDto> {
-    const data = await this.userService.pagination(page, limit, sort, order);
-    return this.responseService.toPaginationResponse(
+  @Get()
+  async findAll(): Promise<ResponseDto> {
+    const data = await this.categoryService.findAll();
+    return this.responseService.toDtosResponse(
       HttpStatus.OK,
-      'Paginated User List',
-      page,
-      limit,
+      'All Category List',
       data,
     );
   }
 
   @UseGuards(new SetterGuard())
   @HttpCode(HttpStatus.CREATED)
-  @ApiBody({ type: UserDto })
+  @ApiBody({ type: CategoryDto })
   @ApiCreatedResponse({
     status: HttpStatus.CREATED,
-    description: 'User Created Successfully',
+    description: 'Category Created Successfully',
   })
   @Post()
   async create(
     @Body(
       new DtoValidationPipe({ whitelist: true, forbidNonWhitelisted: true }),
     )
-    dto: UserDto,
+    dto: CategoryDto,
   ): Promise<ResponseDto> {
-    const data = await this.userService.create(dto);
+    const data = await this.categoryService.create(dto);
     return this.responseService.toDtoResponse(
       HttpStatus.CREATED,
-      'User Created Successfully',
+      'Category Created Successfully',
       data,
     );
   }
 
   @UseGuards(new SetterGuard())
   @HttpCode(HttpStatus.OK)
-  @ApiBody({ type: UserDto })
+  @ApiBody({ type: CategoryDto })
   @ApiOkResponse({
     status: HttpStatus.OK,
-    description: 'User Updated successfully',
+    description: 'Category Updated successfully',
   })
   @Put(':id')
   async update(
     @Param('id', new ObjectIdValidationPipe()) id: string,
-    @Body(new DtoValidationPipe({ skipMissingProperties: true })) dto: UserDto,
+    @Body(new DtoValidationPipe({ skipMissingProperties: true }))
+    dto: CategoryDto,
   ): Promise<ResponseDto> {
-    const data = await this.userService.update(id, dto);
+    const data = await this.categoryService.update(id, dto);
     return this.responseService.toDtoResponse(
       HttpStatus.OK,
-      'User Updated successfully',
+      'Category Updated successfully',
       data,
     );
   }
@@ -115,16 +96,16 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     status: HttpStatus.OK,
-    description: 'User Deleted successfully',
+    description: 'Category Deleted successfully',
   })
   @Delete(':id')
   async remove(
     @Param('id', new ObjectIdValidationPipe()) id: string,
   ): Promise<ResponseDto> {
-    const data = await this.userService.remove(id);
+    const data = await this.categoryService.remove(id);
     return this.responseService.toResponse(
       HttpStatus.OK,
-      'User Deleted successfully',
+      'Category Deleted successfully',
       data,
     );
   }
@@ -132,16 +113,16 @@ export class UserController {
   @HttpCode(HttpStatus.OK)
   @ApiCreatedResponse({
     status: HttpStatus.OK,
-    description: 'Single User By ID',
+    description: 'Single Category By ID',
   })
   @Get(':id')
   async findByID(
     @Param('id', new ObjectIdValidationPipe()) id: string,
   ): Promise<ResponseDto> {
-    const data = await this.userService.findByID(id);
+    const data = await this.categoryService.findByID(id);
     return this.responseService.toDtoResponse(
       HttpStatus.OK,
-      'Single User By ID',
+      'Single Category By ID',
       data,
     );
   }

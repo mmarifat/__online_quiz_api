@@ -63,6 +63,15 @@ export class UserService {
         });
       }
 
+      if (page && limit) {
+        pipeline.push({
+          $skip: page - 1,
+        });
+        pipeline.push({
+          $limit: limit,
+        });
+      }
+
       pipeline.push({
         $lookup: {
           from: 'roles',
@@ -82,10 +91,18 @@ export class UserService {
         $unwind: { path: '$role', preserveNullAndEmptyArrays: true },
       });
 
-      return await Promise.all([
+      const paginatedData = await Promise.all([
         this.userModel.aggregate(pipeline).exec(),
-        this.userModel.estimatedDocumentCount(),
+        this.userModel
+          .aggregate([
+            {
+              $match: { ...isNotDeletedQuery },
+            },
+          ])
+          .count('count')
+          .exec(),
       ]);
+      return [paginatedData[0], paginatedData[1][0].count];
     } catch (error) {
       throw new SystemException(error);
     }

@@ -3,10 +3,12 @@ import { configEnvironment } from '../package/env-config/env-config';
 import { configRedis } from '../package/redis-config/redis.config';
 import { PublicMiddleware } from '../package/middlewares/public.middleware';
 import { configMongo } from '../package/mongo-config/mongo.config';
-import { UserModule } from './user/user.module';
-import { AuthModule } from './auth/auth.module';
 import { AuthMiddleware } from '../package/middlewares/auth.middleware';
 import { publicUrls } from './public.url';
+import { UserModule } from './user/user.module';
+import { AuthModule } from './auth/auth.module';
+import { QuestionModule } from './question/question.module';
+import { CategoryModule } from './category/category.module';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { publicUrls } from './public.url';
     configMongo(),
     AuthModule,
     UserModule,
+    CategoryModule,
+    QuestionModule,
   ],
 })
 export class AppModule implements NestModule {

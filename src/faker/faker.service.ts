@@ -12,6 +12,7 @@ import {
 import * as https from 'https';
 import * as fs from 'fs';
 import { seederUserID } from '../seeder/json/user.json';
+import { DeleteStatusEnum } from '../package/enum/delete-status.enum';
 
 interface fetchResultInterface {
   category: string;
@@ -126,6 +127,7 @@ export class FakerService {
     const c = new CategoryEntity();
     c.name = category.trim();
 
+    c.isDeleted = DeleteStatusEnum.disabled;
     c.createdBy = seederUserID as any;
     c.updatedBy = seederUserID as any;
     c.createdAt = new Date();

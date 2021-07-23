@@ -21,11 +21,11 @@ export class RoleController {
   })
   @Get()
   async findAll(): Promise<ResponseDto> {
-    const roles = await this.roleService.findAll();
+    const data = await this.roleService.findAll();
     return this.responseService.toDtosResponse(
       HttpStatus.OK,
       'All Role List',
-      roles,
+      data,
     );
   }
 
@@ -38,11 +38,11 @@ export class RoleController {
   async findByID(
     @Param('id', new ObjectIdValidationPipe()) id: string,
   ): Promise<ResponseDto> {
-    const role = await this.roleService.findByID(id);
+    const data = await this.roleService.findByID(id);
     return this.responseService.toDtoResponse(
       HttpStatus.OK,
       'Single Role By ID',
-      role,
+      data,
     );
   }
 }
