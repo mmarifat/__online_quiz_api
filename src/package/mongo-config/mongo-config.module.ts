@@ -9,10 +9,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       useFactory: (configService: ConfigService) => ({
         uri: configService.get<string>('DATABASE'),
         useUnifiedTopology: true,
-        useFindAndModify: false,
         useNewUrlParser: true,
         useCreateIndex: true,
-        autoCreate: true,
+        useFindAndModify: false,
       }),
       imports: [ConfigModule],
       inject: [ConfigService],

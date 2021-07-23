@@ -19,8 +19,12 @@
 		"start:staging": "NODE_ENV=staging tsnd --respawn --transpile-only src/api/main.ts",
 		"start:test": "NODE_ENV=test tsnd --respawn --transpile-only src/api/main.ts",
 		"start:prod": "tsnd dist/api/main",
-		"seeder:dev": "NODE_ENV=development ts-node src/seeder/main.ts",
-		"seeder:prod": "ts-node dist/seeder/main.js"
+		"seeder:dev": "NODE_ENV=development tsnd src/seeder/main.ts",
+		"seeder:prod": "tsnd dist/seeder/main.js",
+		"prefaker:dev": "yarn run seeder:dev",
+		"faker:dev": "NODE_ENV=development tsnd src/faker/main.ts",
+		"prefaker:prod": "yarn run seeder:prod",
+		"faker:prod": "tsnd dist/faker/main.js"
 	},
 	"dependencies": {
 		"@liaoliaots/nestjs-redis": "^3.0.0-next.3",

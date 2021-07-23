@@ -19,9 +19,10 @@ export class SeederService {
     private readonly bcryptService: BcryptService,
   ) {}
 
-  async initialize() {
+  async initialize(): Promise<boolean> {
     await this.user();
     await this.role();
+    return true;
   }
 
   /****** user ********/
@@ -37,8 +38,8 @@ export class SeederService {
         user.updatedBy = seederUserID;
         await this.userModel.create(user);
       }
-      this.logger.log('User seed done');
-    } else this.logger.log('User seed already done!!');
+      this.logger.log('User seed done.................');
+    } else this.logger.log('User seed already done.................');
 
     return true;
   };
@@ -60,8 +61,8 @@ export class SeederService {
         return m;
       });
       await this.roleModel.insertMany(roleJson);
-      this.logger.log('Role seed done');
-    } else this.logger.log('Role seed already done!!');
+      this.logger.log('Role seed done.................');
+    } else this.logger.log('Role seed already done.................');
 
     return true;
   };

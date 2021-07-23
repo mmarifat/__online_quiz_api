@@ -14,10 +14,10 @@ export class UserEntity {
   })
   isDeleted: DeleteStatusEnum;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
   createdBy: UserEntity;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
   updatedBy: UserEntity;
 
   @Prop({

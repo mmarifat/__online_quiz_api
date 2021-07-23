@@ -1,10 +1,10 @@
 import * as mongoose from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { DeleteStatusEnum } from '../../enum/delete-status.enum';
-import { UserEntity } from './user.schema';
+import { UserEntity } from '../user/user.schema';
 
 @Schema()
-export class RoleEntity {
+export class CategoryEntity {
   @Prop({
     type: Number,
     enum: DeleteStatusEnum,
@@ -32,28 +32,15 @@ export class RoleEntity {
   updatedAt: Date;
 
   @Prop({ type: String, required: true })
-  role: string;
+  name: string;
 }
 
-const RoleSchema = SchemaFactory.createForClass(RoleEntity);
+const CategorySchema = SchemaFactory.createForClass(CategoryEntity);
 
-RoleSchema.index({ role: 1, isDeleted: 1 });
-RoleSchema.index({ role: 1 });
-RoleSchema.index({ isDeleted: 1 });
+CategorySchema.index({ name: 1, isDeleted: 1 });
+CategorySchema.index({ isDeleted: 1 });
 
-RoleSchema.path('role').validate({
-  validator: async function (value) {
-    const count = await this.model(RoleEntity.name).countDocuments({
-      role: value,
-    });
-    return !count;
-  },
-  message: (props) => {
-    return `'${props.value}' already exist`;
-  },
-});
-
-RoleSchema.set('toJSON', {
+CategorySchema.set('toJSON', {
   transform: (document, obj) => {
     obj.id = obj._id.toString();
     delete obj._id;
@@ -61,5 +48,5 @@ RoleSchema.set('toJSON', {
   },
 });
 
-export type RoleDocument = RoleEntity & mongoose.Document;
-export default RoleSchema;
+export type CategoryDocument = CategoryEntity & mongoose.Document;
+export default CategorySchema;
