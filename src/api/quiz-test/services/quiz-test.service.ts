@@ -1,5 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as mongoose from 'mongoose';
 import { Model } from 'mongoose';
 import { SystemException } from '../../../package/exceptions/system.exception';
 import aggregateToVirtualAggregateQuery from '../../../package/queries/aggregate-to-virtual.aggregate.query';
@@ -273,7 +274,10 @@ export class QuizTestService {
         (<unknown>{ ...savedDto, ...modifiedDto })
       );
 
-      await this.quizTestModel.updateOne({ _id: id }, toBeSaved);
+      await this.quizTestModel.updateOne(
+        { _id: mongoose.Types.ObjectId(id) },
+        toBeSaved,
+      );
 
       return this.findByID(id);
     } catch (error) {
@@ -288,7 +292,7 @@ export class QuizTestService {
       this.exceptionService.notFound(savedDto, 'Quiz-test not found!!');
 
       const deleted = await this.quizTestModel.updateOne(
-        { _id: id },
+        { _id: mongoose.Types.ObjectId(id) },
         {
           isDeleted: DeleteStatusEnum.enabled,
         },
@@ -304,7 +308,7 @@ export class QuizTestService {
     try {
       const pipeline: any[] = [
         {
-          $match: { ...isNotDeletedQuery, _id: id },
+          $match: { ...isNotDeletedQuery, _id: mongoose.Types.ObjectId(id) },
         },
         ...unsetAbstractFieldsAggregateQuery,
         ...aggregateToVirtualAggregateQuery,
@@ -348,6 +352,52 @@ export class QuizTestService {
 
       pipeline.push({
         $unwind: { path: '$category', preserveNullAndEmptyArrays: true },
+      });
+
+      const data = await this.quizTestModel.aggregate(pipeline).exec();
+
+      this.exceptionService.notFound(data, 'No quiz-test found!!');
+
+      return data[0];
+    } catch (error) {
+      throw new SystemException(error);
+    }
+  };
+
+  // used by result checker
+  findByIdWithCorrectAnswer = async (id: string): Promise<QuizTestEntity> => {
+    try {
+      const pipeline: any[] = [
+        {
+          $match: { ...isNotDeletedQuery, _id: mongoose.Types.ObjectId(id) },
+        },
+        {
+          $project: {
+            category: 0,
+          },
+        },
+        ...unsetAbstractFieldsAggregateQuery,
+        ...aggregateToVirtualAggregateQuery,
+      ];
+
+      pipeline.push({
+        $lookup: {
+          from: CollectionEnum.QUESTION,
+          let: { localID: '$questions' },
+          pipeline: [
+            {
+              $match: { $expr: { $in: ['$_id', '$$localID'] } },
+            },
+            {
+              $project: {
+                category: 0,
+              },
+            },
+            ...unsetAbstractFieldsAggregateQuery,
+            ...aggregateToVirtualAggregateQuery,
+          ],
+          as: 'questions',
+        },
       });
 
       const data = await this.quizTestModel.aggregate(pipeline).exec();

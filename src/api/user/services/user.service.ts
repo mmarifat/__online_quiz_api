@@ -16,6 +16,7 @@ import { BcryptService } from '../../../package/services/bcrypt.service';
 import { DeleteDto } from '../../../package/dtos/response/delete.dto';
 import { DeleteStatusEnum } from '../../../package/enum/delete-status.enum';
 import CollectionEnum from '../../../package/enum/collection.enum';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class UserService {
@@ -160,7 +161,10 @@ export class UserService {
         (<unknown>{ ...savedDto, ...customDto })
       );
 
-      await this.userModel.updateOne({ _id: id }, toBeSaved);
+      await this.userModel.updateOne(
+        { _id: mongoose.Types.ObjectId(id) },
+        toBeSaved,
+      );
 
       return this.findByID(id);
     } catch (error) {
@@ -175,7 +179,7 @@ export class UserService {
       this.exceptionService.notFound(savedDto, 'User not found!!');
 
       const deleted = await this.userModel.updateOne(
-        { _id: id },
+        { _id: mongoose.Types.ObjectId(id) },
         {
           isDeleted: DeleteStatusEnum.enabled,
         },
@@ -191,7 +195,7 @@ export class UserService {
     try {
       const pipeline: any[] = [
         {
-          $match: { ...isNotDeletedQuery, _id: id },
+          $match: { ...isNotDeletedQuery, _id: mongoose.Types.ObjectId(id) },
         },
         ...unsetAbstractFieldsAggregateQuery,
         ...aggregateToVirtualAggregateQuery,
@@ -269,7 +273,7 @@ export class UserService {
     try {
       const pipeline: any[] = [
         {
-          $match: { ...isNotDeletedQuery, _id: id },
+          $match: { ...isNotDeletedQuery, _id: mongoose.Types.ObjectId(id) },
         },
         ...unsetAbstractFieldsAggregateQuery,
         ...aggregateToVirtualAggregateQuery,

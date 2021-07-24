@@ -10,6 +10,7 @@ import UserQuizTestLogSchema, {
   UserQuizTestLogEntity,
 } from '../../package/schemas/quiz/user-quiz-test-log.schema';
 import { UserQuizTestLogController } from './controllers/user-quiz-test-log.controller';
+import { QuizTestModule } from '../quiz-test/quiz-test.module';
 
 @Module({
   imports: [
@@ -26,6 +27,7 @@ import { UserQuizTestLogController } from './controllers/user-quiz-test-log.cont
       },
     ]),
     GlobalModule,
+    QuizTestModule,
   ],
   controllers: [UserQuizTestLogController],
   providers: [UserQuizTestLogService],

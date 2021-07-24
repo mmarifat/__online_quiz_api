@@ -45,9 +45,11 @@ async function bootstrap() {
 
   await app.listen(appConfig.port);
 
-  logger.log(`API is running in : http://127.0.0.1:${appConfig.port}`);
   logger.log(
-    `API-Documentation is running in : http://127.0.0.1:${appConfig.port}/quiz-api`,
+    `API is running in : http://localhost:${appConfig.port} or http://127.0.0.1:${appConfig.port}`,
+  );
+  logger.log(
+    `API-Documentation is running in : http://localhost:${appConfig.port}/quiz-api or http://127.0.0.1:${appConfig.port}/quiz-api`,
   );
 }
 

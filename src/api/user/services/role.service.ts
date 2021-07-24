@@ -11,6 +11,7 @@ import isNotDeletedQuery from '../../../package/queries/is-not-deleted.query';
 import aggregateToVirtualAggregateQuery from '../../../package/queries/aggregate-to-virtual.aggregate.query';
 import unsetAbstractFieldsAggregateQuery from '../../../package/queries/unset-abstract-fields.aggregate.query';
 import { UserTypeEnum } from '../../../package/enum/user-type.enum';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class RoleService {
@@ -45,7 +46,7 @@ export class RoleService {
       const roles = await this.roleModel
         .aggregate([
           {
-            $match: { ...isNotDeletedQuery, _id: id },
+            $match: { ...isNotDeletedQuery, _id: mongoose.Types.ObjectId(id) },
           },
           ...unsetAbstractFieldsAggregateQuery,
           ...aggregateToVirtualAggregateQuery,

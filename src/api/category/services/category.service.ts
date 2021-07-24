@@ -14,6 +14,7 @@ import {
   CategoryEntity,
 } from '../../../package/schemas/quiz/category.schema';
 import { CategoryDto } from '../../../package/dtos/quiz/category.dto';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class CategoryService {
@@ -65,7 +66,10 @@ export class CategoryService {
         (<unknown>{ ...savedDto, ...modifiedDto })
       );
 
-      await this.categoryModel.updateOne({ _id: id }, toBeSaved);
+      await this.categoryModel.updateOne(
+        { _id: mongoose.Types.ObjectId(id) },
+        toBeSaved,
+      );
 
       return this.findByID(id);
     } catch (error) {
@@ -80,7 +84,7 @@ export class CategoryService {
       this.exceptionService.notFound(savedDto, 'Category not found!!');
 
       const deleted = await this.categoryModel.updateOne(
-        { _id: id },
+        { _id: mongoose.Types.ObjectId(id) },
         {
           isDeleted: DeleteStatusEnum.enabled,
         },
@@ -96,7 +100,7 @@ export class CategoryService {
     try {
       const pipeline: any[] = [
         {
-          $match: { ...isNotDeletedQuery, _id: id },
+          $match: { ...isNotDeletedQuery, _id: mongoose.Types.ObjectId(id) },
         },
         ...unsetAbstractFieldsAggregateQuery,
         ...aggregateToVirtualAggregateQuery,

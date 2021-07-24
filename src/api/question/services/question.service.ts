@@ -16,6 +16,7 @@ import {
 } from '../../../package/schemas/quiz/question.schema';
 import { QuestionDto } from '../../../package/dtos/quiz/question.dto';
 import CollectionEnum from '../../../package/enum/collection.enum';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class QuestionService {
@@ -179,7 +180,10 @@ export class QuestionService {
         (<unknown>{ ...savedDto, ...modifiedDto })
       );
 
-      await this.questionModel.updateOne({ _id: id }, toBeSaved);
+      await this.questionModel.updateOne(
+        { _id: mongoose.Types.ObjectId(id) },
+        toBeSaved,
+      );
 
       return this.findByID(id);
     } catch (error) {
@@ -194,7 +198,7 @@ export class QuestionService {
       this.exceptionService.notFound(savedDto, 'Question not found!!');
 
       const deleted = await this.questionModel.updateOne(
-        { _id: id },
+        { _id: mongoose.Types.ObjectId(id) },
         {
           isDeleted: DeleteStatusEnum.enabled,
         },
@@ -210,7 +214,7 @@ export class QuestionService {
     try {
       const pipeline: any[] = [
         {
-          $match: { ...isNotDeletedQuery, _id: id },
+          $match: { ...isNotDeletedQuery, _id: mongoose.Types.ObjectId(id) },
         },
         {
           $project: {
@@ -255,7 +259,7 @@ export class QuestionService {
     try {
       const pipeline: any[] = [
         {
-          $match: { ...isNotDeletedQuery, _id: id },
+          $match: { ...isNotDeletedQuery, _id: mongoose.Types.ObjectId(id) },
         },
         ...unsetAbstractFieldsAggregateQuery,
         ...aggregateToVirtualAggregateQuery,
