@@ -196,7 +196,7 @@ export class FakerService {
         ...aggregateToVirtualAggregateQuery,
       ];
 
-      if (total.length) {
+      if (total.length > 0 && total[0]?.count > 0) {
         pipeline.push({
           $skip: Math.random() * total[0].count,
         });

@@ -123,7 +123,10 @@ export class QuizTestService {
           .exec(),
       ]);
 
-      return [paginatedData[0], paginatedData[1][0].count];
+      return [
+        paginatedData[0],
+        paginatedData[1].length ? paginatedData[1][0]?.count : 0,
+      ];
     } catch (error) {
       throw new SystemException(error);
     }
@@ -227,7 +230,10 @@ export class QuizTestService {
           .count('count')
           .exec(),
       ]);
-      return [paginatedData[0], paginatedData[1][0].count];
+      return [
+        paginatedData[0],
+        paginatedData[1].length ? paginatedData[1][0]?.count : 0,
+      ];
     } catch (error) {
       throw new SystemException(error);
     }
