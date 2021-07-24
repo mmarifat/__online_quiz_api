@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { QuestionModule } from './question/question.module';
 import { CategoryModule } from './category/category.module';
 import { QuizTestModule } from './quiz-test/quiz-test.module';
+import { UserQuizTestLogModule } from './user-quiz-test-log/user-quiz-test-log.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { QuizTestModule } from './quiz-test/quiz-test.module';
     CategoryModule,
     QuestionModule,
     QuizTestModule,
+    UserQuizTestLogModule,
   ],
 })
 export class AppModule implements NestModule {
