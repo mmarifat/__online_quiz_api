@@ -6,14 +6,15 @@ import { QuestionController } from './controllers/question.controller';
 import QuestionSchema, {
   QuestionEntity,
 } from '../../package/schemas/quiz/question.schema';
+import CollectionEnum from '../../package/enum/collection.enum';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {
         name: QuestionEntity.name,
-        collection: 'questions',
         schema: QuestionSchema,
+        collection: CollectionEnum.QUESTION,
       },
     ]),
     GlobalModule,

@@ -1,7 +1,7 @@
 import { BaseDto } from '../core/base.dto';
 import { IsMongoId, IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import mongoose from 'mongoose';
+import * as mongoose from 'mongoose';
 
 export class QuestionDto extends BaseDto {
   @ApiProperty()

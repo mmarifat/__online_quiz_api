@@ -8,19 +8,20 @@ import { UserService } from './services/user.service';
 import { RoleController } from './controllers/role.controller';
 import { RoleService } from './services/role.service';
 import { BcryptService } from '../../package/services/bcrypt.service';
+import CollectionEnum from '../../package/enum/collection.enum';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {
         name: UserEntity.name,
-        collection: 'users',
         schema: UserSchema,
+        collection: CollectionEnum.USER,
       },
       {
         name: RoleEntity.name,
-        collection: 'roles',
         schema: RoleSchema,
+        collection: CollectionEnum.ROLE,
       },
     ]),
     GlobalModule,

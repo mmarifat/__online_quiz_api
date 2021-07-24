@@ -15,6 +15,7 @@ import { RequestAppendService } from '../../../package/services/request-append.s
 import { BcryptService } from '../../../package/services/bcrypt.service';
 import { DeleteDto } from '../../../package/dtos/response/delete.dto';
 import { DeleteStatusEnum } from '../../../package/enum/delete-status.enum';
+import CollectionEnum from '../../../package/enum/collection.enum';
 
 @Injectable()
 export class UserService {
@@ -74,7 +75,7 @@ export class UserService {
 
       pipeline.push({
         $lookup: {
-          from: 'roles',
+          from: CollectionEnum.ROLE,
           let: { localID: '$role' },
           pipeline: [
             {
@@ -195,7 +196,7 @@ export class UserService {
 
       pipeline.push({
         $lookup: {
-          from: 'roles',
+          from: CollectionEnum.ROLE,
           let: { localID: '$role' },
           pipeline: [
             {
@@ -233,7 +234,7 @@ export class UserService {
 
       pipeline.push({
         $lookup: {
-          from: 'roles',
+          from: CollectionEnum.ROLE,
           let: { localID: '$role' },
           pipeline: [
             {

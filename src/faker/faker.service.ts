@@ -13,6 +13,16 @@ import * as https from 'https';
 import * as fs from 'fs';
 import { seederUserID } from '../seeder/json/user.json';
 import { DeleteStatusEnum } from '../package/enum/delete-status.enum';
+import {
+  QuizTestDocument,
+  QuizTestEntity,
+} from '../package/schemas/quiz/quiz-test.schema';
+import isNotDeletedQuery from '../package/queries/is-not-deleted.query';
+import unsetAbstractFieldsAggregateQuery from '../package/queries/unset-abstract-fields.aggregate.query';
+import aggregateToVirtualAggregateQuery from '../package/queries/aggregate-to-virtual.aggregate.query';
+import CollectionEnum from '../package/enum/collection.enum';
+import { SystemException } from '../package/exceptions/system.exception';
+import * as faker from 'faker';
 
 interface fetchResultInterface {
   category: string;
@@ -37,10 +47,22 @@ export class FakerService {
     private readonly categoryModel: Model<CategoryDocument>,
     @InjectModel(QuestionEntity.name)
     private readonly questionModel: Model<QuestionDocument>,
+    @InjectModel(QuizTestEntity.name)
+    private readonly quizTestModel: Model<QuizTestDocument>,
   ) {}
 
+  categories: CategoryEntity[] = [];
+
   async initialize(): Promise<boolean> {
-    const qc = await this.count();
+    await this.fakeQuestions();
+    await this.fakeTests();
+    return true;
+  }
+
+  /********* fake questions start *************/
+  async fakeQuestions(): Promise<boolean> {
+    this.logger.log('Faking questions...........................');
+    const qc = await this.countQuestion();
     if (qc < 1) {
       const questions: fetchResultInterface[] = JSON.parse(
         fs.readFileSync('./src/faker/json/questions.json', 'utf8'),
@@ -58,7 +80,7 @@ export class FakerService {
     return true;
   }
 
-  getRandomQuestions = async (): Promise<boolean> => {
+  async getRandomQuestions(): Promise<boolean> {
     const questions: fetchResultInterface[] = [];
     const amount = 50;
 
@@ -89,11 +111,9 @@ export class FakerService {
         });
     }
     return true;
-  };
+  }
 
-  generateQuestions = async (
-    questions: fetchResultInterface[],
-  ): Promise<boolean> => {
+  async generateQuestions(questions: fetchResultInterface[]): Promise<boolean> {
     if (questions.length) {
       for (const question of questions) {
         const q = new QuestionEntity();
@@ -117,13 +137,20 @@ export class FakerService {
         const upsertCategory = await this.generateCategory(question.category);
         q.category = upsertCategory['_id'];
 
+        const found = this.categories.findIndex(
+          (m) => m.name === upsertCategory.name,
+        );
+        if (found === -1) {
+          this.categories.push(upsertCategory);
+        }
+
         await this.questionModel.create(q);
       }
     }
     return true;
-  };
+  }
 
-  generateCategory = async (category: string): Promise<CategoryEntity> => {
+  async generateCategory(category: string): Promise<CategoryEntity> {
     const c = new CategoryEntity();
     c.name = category.trim();
 
@@ -140,9 +167,123 @@ export class FakerService {
       { ...c },
       { upsert: true, new: true },
     );
-  };
+  }
 
-  count = async (): Promise<number> => {
+  async randomQuestionsFromDbByCategory(
+    limit: number,
+    category: string,
+  ): Promise<QuestionEntity[]> {
+    try {
+      const total = await this.questionModel
+        .aggregate([
+          {
+            $match: { ...isNotDeletedQuery, category },
+          },
+        ])
+        .count('count')
+        .exec();
+
+      const pipeline: any[] = [
+        {
+          $match: { ...isNotDeletedQuery, category },
+        },
+        {
+          $project: {
+            correct: 0,
+          },
+        },
+        ...unsetAbstractFieldsAggregateQuery,
+        ...aggregateToVirtualAggregateQuery,
+      ];
+
+      if (total.length) {
+        pipeline.push({
+          $skip: Math.random() * total[0].count,
+        });
+      }
+
+      if (limit) {
+        pipeline.push({
+          $limit: Number(limit),
+        });
+      }
+
+      pipeline.push({
+        $lookup: {
+          from: CollectionEnum.CATEGORY,
+          let: { localID: '$category' },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ['$_id', '$$localID'] } },
+            },
+            ...unsetAbstractFieldsAggregateQuery,
+            ...aggregateToVirtualAggregateQuery,
+          ],
+          as: 'category',
+        },
+      });
+
+      pipeline.push({
+        $unwind: { path: '$category', preserveNullAndEmptyArrays: true },
+      });
+
+      return this.questionModel.aggregate(pipeline).exec();
+    } catch (error) {
+      throw new SystemException(error);
+    }
+  }
+
+  async countQuestion(): Promise<number> {
     return this.questionModel.estimatedDocumentCount();
-  };
+  }
+  /********* fake questions end  *************/
+
+  /********* fake test start *************/
+
+  async fakeTests(): Promise<boolean> {
+    this.logger.log('Faking tests..............');
+    const tc = await this.countTest();
+    if (tc < 1) {
+      await this.generateTests();
+    }
+    this.logger.log('Test fake done..............');
+    return true;
+  }
+
+  async generateTests(): Promise<boolean> {
+    const countQs: number = await this.countQuestion();
+
+    for (const category of this.categories) {
+      let cnt = 1;
+      while (cnt < Math.floor((countQs + 1) / 2)) {
+        const qz = new QuizTestEntity();
+        qz.title = faker.name.title();
+        qz.description = faker.lorem.paragraphs(2);
+        qz.timeInMin = cnt % 2 === 0 ? 15 : 10;
+
+        const questions = await this.randomQuestionsFromDbByCategory(
+          cnt % 2 === 0 ? 15 : 10,
+          category['_id'],
+        );
+        qz.questions = questions.map((m) => m['id']);
+        qz.category = category['_id'];
+
+        qz.createdBy = seederUserID as any;
+        qz.updatedBy = seederUserID as any;
+        qz.createdAt = new Date();
+        qz.updatedAt = new Date();
+
+        await this.quizTestModel.create(qz);
+
+        cnt++;
+      }
+    }
+
+    return true;
+  }
+
+  async countTest(): Promise<number> {
+    return this.quizTestModel.estimatedDocumentCount();
+  }
+  /*********   fake test end  *************/
 }

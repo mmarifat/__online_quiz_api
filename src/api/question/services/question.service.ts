@@ -5,10 +5,7 @@ import { SystemException } from '../../../package/exceptions/system.exception';
 import aggregateToVirtualAggregateQuery from '../../../package/queries/aggregate-to-virtual.aggregate.query';
 import isNotDeletedQuery from '../../../package/queries/is-not-deleted.query';
 import unsetAbstractFieldsAggregateQuery from '../../../package/queries/unset-abstract-fields.aggregate.query';
-import {
-  UserDocument,
-  UserEntity,
-} from '../../../package/schemas/user/user.schema';
+import { UserEntity } from '../../../package/schemas/user/user.schema';
 import { ExceptionService } from '../../../package/services/exception.service';
 import { RequestAppendService } from '../../../package/services/request-append.service';
 import { DeleteDto } from '../../../package/dtos/response/delete.dto';
@@ -18,6 +15,7 @@ import {
   QuestionEntity,
 } from '../../../package/schemas/quiz/question.schema';
 import { QuestionDto } from '../../../package/dtos/quiz/question.dto';
+import CollectionEnum from '../../../package/enum/collection.enum';
 
 @Injectable()
 export class QuestionService {
@@ -66,7 +64,7 @@ export class QuestionService {
 
       pipeline.push({
         $lookup: {
-          from: 'categories',
+          from: CollectionEnum.CATEGORY,
           let: { localID: '$category' },
           pipeline: [
             {
@@ -130,7 +128,7 @@ export class QuestionService {
 
       pipeline.push({
         $lookup: {
-          from: 'categories',
+          from: CollectionEnum.CATEGORY,
           let: { localID: '$category' },
           pipeline: [
             {
@@ -177,7 +175,7 @@ export class QuestionService {
 
       const modifiedDto = this.requestAppendService.forUpdate(dto);
 
-      const toBeSaved: UserDocument = <UserDocument>(
+      const toBeSaved: QuestionDocument = <QuestionDocument>(
         (<unknown>{ ...savedDto, ...modifiedDto })
       );
 
@@ -225,7 +223,7 @@ export class QuestionService {
 
       pipeline.push({
         $lookup: {
-          from: 'categories',
+          from: CollectionEnum.CATEGORY,
           let: { localID: '$category' },
           pipeline: [
             {

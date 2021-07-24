@@ -6,14 +6,15 @@ import CategorySchema, {
 } from '../../package/schemas/quiz/category.schema';
 import { CategoryController } from './controllers/category.controller';
 import { CategoryService } from './services/category.service';
+import CollectionEnum from '../../package/enum/collection.enum';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       {
         name: CategoryEntity.name,
-        collection: 'categories',
         schema: CategorySchema,
+        collection: CollectionEnum.CATEGORY,
       },
     ]),
     GlobalModule,

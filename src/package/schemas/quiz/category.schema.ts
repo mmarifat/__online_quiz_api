@@ -2,6 +2,7 @@ import * as mongoose from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { DeleteStatusEnum } from '../../enum/delete-status.enum';
 import { UserEntity } from '../user/user.schema';
+import CollectionEnum from '../../enum/collection.enum';
 
 @Schema()
 export class CategoryEntity {
@@ -13,10 +14,10 @@ export class CategoryEntity {
   })
   isDeleted: DeleteStatusEnum;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CollectionEnum.USER })
   createdBy: UserEntity;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CollectionEnum.USER })
   updatedBy: UserEntity;
 
   @Prop({

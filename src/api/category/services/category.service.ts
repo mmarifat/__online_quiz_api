@@ -5,7 +5,6 @@ import { SystemException } from '../../../package/exceptions/system.exception';
 import aggregateToVirtualAggregateQuery from '../../../package/queries/aggregate-to-virtual.aggregate.query';
 import isNotDeletedQuery from '../../../package/queries/is-not-deleted.query';
 import unsetAbstractFieldsAggregateQuery from '../../../package/queries/unset-abstract-fields.aggregate.query';
-import { UserDocument } from '../../../package/schemas/user/user.schema';
 import { ExceptionService } from '../../../package/services/exception.service';
 import { RequestAppendService } from '../../../package/services/request-append.service';
 import { DeleteDto } from '../../../package/dtos/response/delete.dto';
@@ -62,7 +61,7 @@ export class CategoryService {
 
       const modifiedDto = this.requestAppendService.forUpdate(dto);
 
-      const toBeSaved: UserDocument = <UserDocument>(
+      const toBeSaved: CategoryDocument = <CategoryDocument>(
         (<unknown>{ ...savedDto, ...modifiedDto })
       );
 

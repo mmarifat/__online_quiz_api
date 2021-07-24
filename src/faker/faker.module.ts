@@ -9,6 +9,10 @@ import CategorySchema, {
 import QuestionSchema, {
   QuestionEntity,
 } from '../package/schemas/quiz/question.schema';
+import QuizTestSchema, {
+  QuizTestEntity,
+} from '../package/schemas/quiz/quiz-test.schema';
+import CollectionEnum from '../package/enum/collection.enum';
 
 @Module({
   imports: [
@@ -18,12 +22,17 @@ import QuestionSchema, {
       {
         name: CategoryEntity.name,
         schema: CategorySchema,
-        collection: 'categories',
+        collection: CollectionEnum.CATEGORY,
       },
       {
         name: QuestionEntity.name,
         schema: QuestionSchema,
-        collection: 'questions',
+        collection: CollectionEnum.QUESTION,
+      },
+      {
+        name: QuizTestEntity.name,
+        schema: QuizTestSchema,
+        collection: CollectionEnum.QUIZ_TEST,
       },
     ]),
   ],

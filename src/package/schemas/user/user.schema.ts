@@ -3,6 +3,7 @@ import { GenderEnum } from '../../enum/gender.enum';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { RoleEntity } from './role.schema';
 import { DeleteStatusEnum } from '../../enum/delete-status.enum';
+import CollectionEnum from '../../enum/collection.enum';
 
 @Schema()
 export class UserEntity {
@@ -14,10 +15,10 @@ export class UserEntity {
   })
   isDeleted: DeleteStatusEnum;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CollectionEnum.USER })
   createdBy: UserEntity;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'users' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CollectionEnum.USER })
   updatedBy: UserEntity;
 
   @Prop({
@@ -53,7 +54,7 @@ export class UserEntity {
   @Prop({ type: String })
   presentAddress: string;
 
-  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Role' })
+  @Prop({ type: mongoose.Schema.Types.ObjectId, ref: CollectionEnum.ROLE })
   role: RoleEntity;
 }
 
