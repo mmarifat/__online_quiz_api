@@ -3,6 +3,7 @@
 </p>
 
 [circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
+
 [circleci-url]: https://circleci.com/gh/nestjs/nest
 
   <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
@@ -23,29 +24,126 @@
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 ## Description
+Online Quiz-API - backend starter package
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+TECHHACKCANADA - Backend Developer Challenge - July 25, 2021
 
 ## Installation
 
 ```bash
-$ npm install
+Linux:
+$ sudo apt install redis-server
+
+Windows:
+$ https://github.com/microsoftarchive/redis/releases
+
+Package:
+$ yarn install
+or
+$ npm i
+```
+
+## Before Running the app #1
+
+```bash
+# run seeder
+$ yarn seeder:dev
+or
+$ npm run seeder:dev
+
+# production mode
+$ yarn seeder:prod
+or
+$ npm run seeder:prod
+```
+
+## Before Running the app #2 (To Generate Fake Data)
+
+```bash
+# run faker
+$ yarn faker:dev
+or
+$ npm run faker:dev
+
+# production mode
+$ yarn faker:prod
+or
+$ npm run faker:prod
 ```
 
 ## Running the app
 
 ```bash
-# development
-$ npm run start
 
-# watch mode
+# development mode
+$ yarn start:dev
+or
 $ npm run start:dev
 
 # production mode
+$ yarn start:prod
+or
 $ npm run start:prod
 ```
 
-## Test
+## API Features
+
+=> Auth
+
+- Authentication using JWT
+- Registration of for only test takers
+
+=> User Module (Test Setter Guard)
+
+- Paginated User List
+- New User Create (Both setter and taker)
+- User Update
+- User Delete (soft)
+- Get User By ID
+
+=> Role Module
+
+- Get All Roles
+- Get Role By ID
+
+=> Category Module (Test Setter Guard)
+
+- Get All Catgories
+- New Category Create
+- Update Category
+- Delete Category (soft)
+- Get Category By ID
+
+=> Question Module (Test Setter Guard)
+
+- Get Random Question By Limit
+- Get Random Question By Limit By Category ID
+- New Question Create
+- Update Question
+- Delete Question (soft)
+- Get Question By ID
+
+=> Quiz Test Module (Test Setter Guard)
+
+- Get Paginated Tests List
+- New Quiz-Test Create
+- Update Quiz-Test
+- Delete Quiz-Test (soft)
+- Get Quiz-Test By ID
+
+=> User Quiz Test Module (Both Test Taker and Setter Guard)
+
+- Attend Quiz-Test one time for each test by user ID
+- Get Test Result by Test ID and User ID
+
+## API Documentations
+
+Please Refer to the any of the following url after running the app using previous instruction.
+
+- [Docs](http://localhost:9199/quiz-api) in localhost <br> or
+- [Docs](http://127.0.0.1:9199/quiz-api) in 127.0.0.1
+
+## Test (Not Implemented)
 
 ```bash
 # unit tests
@@ -60,7 +158,8 @@ $ npm run test:cov
 
 ## Support
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them,
+please [read more here](https://docs.nestjs.com/support).
 
 ## Stay in touch
 
