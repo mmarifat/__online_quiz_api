@@ -28,6 +28,18 @@ Online Quiz-API - backend starter package
 
 TECHHACKCANADA - Backend Developer Challenge - July 25, 2021
 
+## Used Tech's
+- Nest JS
+- MongoDb
+- JWT
+- Bcrypt
+- Class Validators
+- Swagger Api Docs
+- Faker
+- EsLint
+- Prettier
+  etc
+
 ## Installation
 
 ```bash
