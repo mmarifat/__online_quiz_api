@@ -21,7 +21,7 @@ import { DtoValidationPipe } from '../../../package/pipes/dto-validation.pipe';
 import { ResponseDto } from '../../../package/dtos/response/response.dto';
 import { TakerGuard } from '../../../package/guards/taker.guard';
 import { UserQuizTestLogDto } from '../../../package/dtos/quiz/user-quiz-test-log.dto';
-import { ObjectIdValidationPipe } from '../../../package/pipes/object-id-validation.pipe';
+import { ApiImplicitQuery } from '@nestjs/swagger/dist/decorators/api-implicit-query.decorator';
 
 @ApiTags('user-quiz-test')
 @ApiBearerAuth()
@@ -54,23 +54,33 @@ export class UserQuizTestLogController {
     );
   }
 
+  @ApiImplicitQuery({
+    name: 'quizID',
+    required: false,
+    type: String,
+  })
+  @ApiImplicitQuery({
+    name: 'userID',
+    required: false,
+    type: String,
+  })
   @HttpCode(HttpStatus.OK)
   @ApiOkResponse({
     status: HttpStatus.OK,
-    description: 'Single User-Quiz-Test By quizID and userID',
+    description: 'User-Quiz-Tests By quizID (and / or) userID',
   })
   @Get()
   async findByID(
-    @Query('quizID', new ObjectIdValidationPipe()) quizID: string,
-    @Query('userID', new ObjectIdValidationPipe()) userID: string,
+    @Query('quizID') quizID: string,
+    @Query('userID') userID: string,
   ): Promise<ResponseDto> {
     const data = await this.userQuizTestLogService.findByQuizAndUser(
-      quizID,
-      userID,
+      quizID || null,
+      userID || null,
     );
-    return this.responseService.toDtoResponse(
+    return this.responseService.toDtosResponse(
       HttpStatus.OK,
-      'Single User-Quiz-Test By quizID and userID',
+      'User-Quiz-Tests By quizID (and / or) userID',
       data,
     );
   }

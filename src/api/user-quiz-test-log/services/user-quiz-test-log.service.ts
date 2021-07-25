@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as mongoose from 'mongoose';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { ExceptionService } from '../../../package/services/exception.service';
 import { RequestAppendService } from '../../../package/services/request-append.service';
 import {
@@ -17,6 +17,7 @@ import isNotDeletedQuery from '../../../package/queries/is-not-deleted.query';
 import aggregateToVirtualAggregateQuery from '../../../package/queries/aggregate-to-virtual.aggregate.query';
 import unsetAbstractFieldsAggregateQuery from '../../../package/queries/unset-abstract-fields.aggregate.query';
 import CollectionEnum from '../../../package/enum/collection.enum';
+import { ObjectIdValidationException } from '../../../package/validations/object-id-validation.exception';
 
 @Injectable()
 export class UserQuizTestLogService {
@@ -37,12 +38,13 @@ export class UserQuizTestLogService {
         modifiedDto.createdBy.toString(),
       );
 
-      if (alreadyDne) {
+      if (alreadyDne.length > 0) {
         throw new SystemException({
           status: HttpStatus.CONFLICT,
           message: 'User already attended in this quiz test',
         });
       }
+
       if (!dto.quizTest) {
         throw new SystemException({
           status: HttpStatus.BAD_REQUEST,
@@ -64,10 +66,12 @@ export class UserQuizTestLogService {
           const resultDto = this.generateTestResult(modifiedDto, quiz);
           await this.userQuizTestLogModel.create(resultDto);
 
-          return this.findByQuizAndUser(
+          const data = this.findByQuizAndUser(
             resultDto.quizTest.toString(),
             resultDto.createdBy.toString(),
           );
+
+          return data[0];
         }
       }
     } catch (error) {
@@ -106,18 +110,56 @@ export class UserQuizTestLogService {
   };
 
   findByQuizAndUser = async (
-    quizID: string,
-    userID: string,
-  ): Promise<UserQuizTestLogEntity | null> => {
+    quizID: string = null,
+    userID: string = null,
+  ): Promise<UserQuizTestLogEntity[]> => {
     const pipeline: any[] = [
       {
         $match: {
           ...isNotDeletedQuery,
-          quizTest: mongoose.Types.ObjectId(quizID),
-          createdBy: mongoose.Types.ObjectId(userID),
         },
       },
     ];
+
+    if (quizID) {
+      const validObjectId =
+        Types.ObjectId.isValid(quizID) &&
+        Types.ObjectId(quizID).toString() === quizID;
+
+      if (!validObjectId) {
+        throw new ObjectIdValidationException(
+          'quizID',
+          quizID,
+          'Object ID Validation Error',
+        );
+      }
+
+      pipeline.push({
+        $match: {
+          quizTest: mongoose.Types.ObjectId(quizID),
+        },
+      });
+    }
+
+    if (userID) {
+      const validObjectId =
+        Types.ObjectId.isValid(userID) &&
+        Types.ObjectId(userID).toString() === userID;
+
+      if (!validObjectId) {
+        throw new ObjectIdValidationException(
+          'userID',
+          userID,
+          'Object ID Validation Error',
+        );
+      }
+
+      pipeline.push({
+        $match: {
+          createdBy: mongoose.Types.ObjectId(userID),
+        },
+      });
+    }
 
     // lookup questions from answers array
     pipeline.push(
@@ -280,8 +322,6 @@ export class UserQuizTestLogService {
       ...unsetAbstractFieldsAggregateQuery,
     );
 
-    const data = await this.userQuizTestLogModel.aggregate(pipeline).exec();
-
-    return data.length ? data[0] : null;
+    return await this.userQuizTestLogModel.aggregate(pipeline).exec();
   };
 }

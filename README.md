@@ -24,11 +24,13 @@
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
 ## Description
+
 Online Quiz-API - backend starter package
 
 TECHHACKCANADA - Backend Developer Challenge - July 25, 2021
 
 ## Used Tech's
+
 - Nest JS
 - MongoDb
 - JWT
@@ -37,8 +39,7 @@ TECHHACKCANADA - Backend Developer Challenge - July 25, 2021
 - Swagger Api Docs
 - Faker
 - EsLint
-- Prettier
-  etc
+- Prettier etc
 
 ## Installation
 
@@ -96,6 +97,20 @@ $ npm run start:dev
 $ yarn start:prod
 or
 $ npm run start:prod
+```
+
+## Users
+
+```bash
+# test setter
+user: mma.rifat66@gmail.com
+password: 123456
+isRemembered: 1 or 0
+
+# test taker
+user: alamin@gmail.com
+password: 123456
+isRemembered: 1 or 0
 ```
 
 ## API Features
