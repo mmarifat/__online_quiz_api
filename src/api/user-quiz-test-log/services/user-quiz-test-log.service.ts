@@ -30,6 +30,19 @@ export class UserQuizTestLogService {
 
   create = async (dto: UserQuizTestLogDto): Promise<UserQuizTestLogEntity> => {
     try {
+      const modifiedDto = this.requestAppendService.forCreate(dto);
+
+      const alreadyDne = await this.findByQuizAndUser(
+        modifiedDto.quizTest.toString(),
+        modifiedDto.createdBy.toString(),
+      );
+
+      if (alreadyDne) {
+        throw new SystemException({
+          status: HttpStatus.CONFLICT,
+          message: 'User already attended in this quiz test',
+        });
+      }
       if (!dto.quizTest) {
         throw new SystemException({
           status: HttpStatus.BAD_REQUEST,
@@ -48,9 +61,13 @@ export class UserQuizTestLogService {
               'quiz-test answers array must be same as quiz-test questions array',
           });
         } else {
-          const resultDto = this.generateTestResult(dto, quiz);
-          const modifiedDto = this.requestAppendService.forCreate(resultDto);
-          return await this.userQuizTestLogModel.create(modifiedDto);
+          const resultDto = this.generateTestResult(modifiedDto, quiz);
+          await this.userQuizTestLogModel.create(resultDto);
+
+          return this.findByQuizAndUser(
+            resultDto.quizTest.toString(),
+            resultDto.createdBy.toString(),
+          );
         }
       }
     } catch (error) {
@@ -69,7 +86,13 @@ export class UserQuizTestLogService {
         (f) => f.question === question['id'].toString(),
       );
 
-      console.log(questionFromUser);
+      if (!questionFromUser) {
+        throw new SystemException({
+          status: HttpStatus.BAD_REQUEST,
+          message:
+            'quiz-test answers array must be same as quiz-test questions array',
+        });
+      }
 
       const answerDto = new TestAnswerDto();
 
@@ -82,55 +105,183 @@ export class UserQuizTestLogService {
     return { ...dto, answers };
   };
 
-  /*findByID = async (id: string): Promise<any> => {
+  findByQuizAndUser = async (
+    quizID: string,
+    userID: string,
+  ): Promise<UserQuizTestLogEntity | null> => {
     const pipeline: any[] = [
       {
-        $match: { ...isNotDeletedQuery, _id: mongoose.Types.ObjectId(id) },
+        $match: {
+          ...isNotDeletedQuery,
+          quizTest: mongoose.Types.ObjectId(quizID),
+          createdBy: mongoose.Types.ObjectId(userID),
+        },
       },
-      ...unsetAbstractFieldsAggregateQuery,
-      ...aggregateToVirtualAggregateQuery,
     ];
 
+    // lookup questions from answers array
+    pipeline.push(
+      {
+        $unwind: { path: '$answers', preserveNullAndEmptyArrays: true },
+      },
+      {
+        $lookup: {
+          from: CollectionEnum.QUESTION,
+          let: { localID: '$answers.question' },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ['$_id', '$$localID'] } },
+            },
+            {
+              $project: {
+                question: 1,
+              },
+            },
+          ],
+          as: 'answers.question',
+        },
+      },
+      {
+        $unwind: {
+          path: '$answers.question',
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $addFields: {
+          'answers.question': '$answers.question.question',
+        },
+      },
+      {
+        $unset: ['answers._id'],
+      },
+    );
+
+    // group by id to make array of answers
     pipeline.push({
-      $lookup: {
-        from: CollectionEnum.QUESTION,
-        let: { localID: '$quizTest' },
-        pipeline: [
-          {
-            $match: { $expr: { $in: ['$_id', '$$localID'] } },
-          },
-          ...unsetAbstractFieldsAggregateQuery,
-          ...aggregateToVirtualAggregateQuery,
-        ],
-        as: 'quizTest',
+      $group: {
+        _id: '$_id',
+        answerResult: {
+          $push: '$answers',
+        },
       },
     });
 
-    pipeline.push({
-      $unwind: { path: '$quizTest', preserveNullAndEmptyArrays: true },
-    });
-
-    pipeline.push({
-      $lookup: {
-        from: CollectionEnum.CATEGORY,
-        let: { localID: '$answers.question' },
-        pipeline: [
-          {
-            $match: { $expr: { $eq: ['$_id', '$$localID'] } },
-          },
-          ...unsetAbstractFieldsAggregateQuery,
-          ...aggregateToVirtualAggregateQuery,
-        ],
-        as: 'answers.question',
+    // re-mapping with array lookup
+    pipeline.push(
+      {
+        $lookup: {
+          from: CollectionEnum.USER_QUIZ_TEST_LOG,
+          let: { localID: '$_id' },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ['$_id', '$$localID'] } },
+            },
+            ...aggregateToVirtualAggregateQuery,
+          ],
+          as: 'new',
+        },
       },
-    });
+      {
+        $unwind: { path: '$new', preserveNullAndEmptyArrays: true },
+      },
+      // added result count
+      {
+        $addFields: {
+          'new.answers': '$answerResult',
+          'new.result.correct': {
+            $size: {
+              $filter: {
+                input: '$answerResult',
+                as: 'ans',
+                cond: { $eq: ['$$ans.correct', true] },
+              },
+            },
+          },
+          'new.result.incorrect': {
+            $size: {
+              $filter: {
+                input: '$answerResult',
+                as: 'ans',
+                cond: { $eq: ['$$ans.correct', false] },
+              },
+            },
+          },
+        },
+      },
+      {
+        $replaceRoot: {
+          newRoot: '$new',
+        },
+      },
+    );
 
-    pipeline.push({
-      $unwind: { path: '$answers.question', preserveNullAndEmptyArrays: true },
-    });
+    // lookup in quizTest
+    pipeline.push(
+      {
+        $lookup: {
+          from: CollectionEnum.QUIZ_TEST,
+          let: { localID: '$quizTest' },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ['$_id', '$$localID'] } },
+            },
+            ...unsetAbstractFieldsAggregateQuery,
+            ...aggregateToVirtualAggregateQuery,
+            {
+              $project: {
+                title: 1,
+                description: 1,
+                timeInMin: 1,
+              },
+            },
+          ],
+          as: 'quizTest',
+        },
+      },
+      {
+        $unwind: { path: '$quizTest', preserveNullAndEmptyArrays: true },
+      },
+    );
 
-    const testResult = await this.userQuizTestLogModel
-      .aggregate(pipeline)
-      .exec();
-  };*/
+    // lookup in createdBy
+    pipeline.push(
+      {
+        $lookup: {
+          from: CollectionEnum.USER,
+          let: { localID: '$createdBy' },
+          pipeline: [
+            {
+              $match: { $expr: { $eq: ['$_id', '$$localID'] } },
+            },
+            ...unsetAbstractFieldsAggregateQuery,
+            ...aggregateToVirtualAggregateQuery,
+            {
+              $project: {
+                fullName: 1,
+                image: 1,
+              },
+            },
+          ],
+          as: 'user',
+        },
+      },
+      {
+        $unwind: { path: '$user', preserveNullAndEmptyArrays: true },
+      },
+    );
+
+    pipeline.push(
+      {
+        $addFields: {
+          date: '$createdAt',
+        },
+      },
+      ...unsetAbstractFieldsAggregateQuery,
+    );
+
+    const data = await this.userQuizTestLogModel.aggregate(pipeline).exec();
+
+    return data.length ? data[0] : null;
+  };
 }

@@ -130,7 +130,7 @@ export class UserController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @ApiCreatedResponse({
+  @ApiOkResponse({
     status: HttpStatus.OK,
     description: 'Single User By ID',
   })

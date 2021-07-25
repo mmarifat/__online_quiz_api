@@ -1,5 +1,10 @@
 import { Controller, Get, HttpCode, HttpStatus, Param } from '@nestjs/common';
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ResponseService } from '../../../package/services/response.service';
 import { ResponseDto } from '../../../package/dtos/response/response.dto';
 import { RoleService } from '../services/role.service';
@@ -30,7 +35,7 @@ export class RoleController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @ApiCreatedResponse({
+  @ApiOkResponse({
     status: HttpStatus.OK,
     description: 'Single Role By ID',
   })

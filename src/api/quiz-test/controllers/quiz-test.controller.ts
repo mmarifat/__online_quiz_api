@@ -175,7 +175,7 @@ export class QuizTestController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @ApiCreatedResponse({
+  @ApiOkResponse({
     status: HttpStatus.OK,
     description: 'Single Category By ID',
   })

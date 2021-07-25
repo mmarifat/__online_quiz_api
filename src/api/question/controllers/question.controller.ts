@@ -133,7 +133,7 @@ export class QuestionController {
   }
 
   @HttpCode(HttpStatus.OK)
-  @ApiCreatedResponse({
+  @ApiOkResponse({
     status: HttpStatus.OK,
     description: 'Single Question By ID',
   })
