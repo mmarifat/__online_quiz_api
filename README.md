@@ -27,7 +27,7 @@
 
 Online Quiz-API - backend starter package
 
-TECHHACKCANADA - Backend Developer Challenge - July 25, 2021
+- July 25, 2021
 
 ## Used Tech's
 
